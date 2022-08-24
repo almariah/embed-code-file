@@ -1,8 +1,12 @@
-/*
-
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
-
-If your plugin does not need CSS, delete this file.
-
-*/
+.markdown-rendered pre .obsidian-embed-code-file {
+    position: relative;
+    top: 3px;
+    left: 0px;
+    font-size: 85%!important;
+    padding: 3px 8px!important;
+    border-radius: 0px!important;
+    margin-top: -9px!important;
+    margin-left:-9px!important;
+    margin-right:-9px!important;
+    margin-bottom:9px!important;
+}

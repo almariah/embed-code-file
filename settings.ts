@@ -3,11 +3,15 @@ import EmbedCodeFile from './main';
 import { PluginSettingTab, Setting, App } from 'obsidian';
 
 export interface EmbedCodeFileSettings {
-	supportedLanguages: string;
+	includedLanguages: string;
+	titleBackgroundColor: string;
+	titleFontColor: string;
 }
 
 export const DEFAULT_SETTINGS: EmbedCodeFileSettings = {
-	supportedLanguages: 'c,cpp,java,shell'
+	includedLanguages: 'c,cpp,java,python,go,ruby,shell',
+	titleBackgroundColor: "#00000020",
+	titleFontColor: ""
 }
 
 export class EmbedCodeFileSettingTab extends PluginSettingTab {
@@ -22,16 +26,36 @@ export class EmbedCodeFileSettingTab extends PluginSettingTab {
 		const {containerEl} = this;
 
 		containerEl.empty();
-
 		containerEl.createEl('h2', {text: 'Embed Code File Settings'});
+
 		new Setting(containerEl)
-			.setName('Supported Languages')
-			.setDesc('Comma separated list of supported languages.')
+			.setName('Included Languages')
+			.setDesc('Comma separated list of included languages.')
 			.addText(text => text
 				.setPlaceholder('Comma separated list')
-				.setValue(this.plugin.settings.supportedLanguages)
+				.setValue(this.plugin.settings.includedLanguages)
 				.onChange(async (value) => {
-					this.plugin.settings.supportedLanguages = value;
+					this.plugin.settings.includedLanguages = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName("Font color of title")
+			.addText(text => text
+				.setPlaceholder('Enter a color')
+				.setValue(this.plugin.settings.titleFontColor)
+				.onChange(async (value) => {
+					this.plugin.settings.titleFontColor = value;
+					await this.plugin.saveSettings();
+				}));
+		  
+		new Setting(containerEl)
+			.setName('Background color of title')
+			.addText(text => text
+				.setPlaceholder('#00000020')
+				.setValue(this.plugin.settings.titleBackgroundColor)
+				.onChange(async (value) => {
+					this.plugin.settings.titleBackgroundColor = value;
 					await this.plugin.saveSettings();
 				}));
 	}
