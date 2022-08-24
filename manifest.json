@@ -1,0 +1,10 @@
+{
+	"id": "embed-code-file",
+	"name": "Embed Code File",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "This is a plugin for Obsidian that allows for embedding code files.",
+	"author": "Obsidian",
+	"authorUrl": "https://obsidian.md",
+	"isDesktopOnly": false
+}
