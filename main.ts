@@ -1,6 +1,6 @@
-import { Plugin, MarkdownRenderer, TFile, MarkdownPostProcessorContext, MarkdownView, Notice} from 'obsidian';
+import { Plugin, MarkdownRenderer, TFile, MarkdownPostProcessorContext, MarkdownView, parseYaml} from 'obsidian';
 import { EmbedCodeFileSettings, EmbedCodeFileSettingTab, DEFAULT_SETTINGS} from "./settings";
-import { extractSrcPath, extractSrcLinesNums, extractSrcLines, extractTitle} from "./utils";
+import { analyseSrcLines, extractSrcLines} from "./utils";
 
 export default class EmbedCodeFile extends Plugin {
 	settings: EmbedCodeFileSettings;
@@ -22,12 +22,6 @@ export default class EmbedCodeFile extends Plugin {
 		});
 	}
 
-	onunload() {
-		document
-		.querySelectorAll(".obsidian-embed-code-file")
-		.forEach((x) => x.remove());
-	}
-
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
 	}
@@ -38,28 +32,41 @@ export default class EmbedCodeFile extends Plugin {
 
 	async registerRenderer(lang: string) {
 		this.registerMarkdownCodeBlockProcessor(`embed-${lang}`, async (meta, el, ctx) => {
+			let fullSrc = ""
 			let src = ""
-			const srcPath = extractSrcPath(meta)
-			if (srcPath != "") {
-				const tFile = <TFile> app.vault.getAbstractFileByPath(srcPath)
-				if (!tFile) {
-					const errMsg = `\`ERROR: could't read file '${srcPath}'\``
-					await MarkdownRenderer.renderMarkdown(errMsg, el, '', this)
-					return
-				}
 
-				const fullSrc = await app.vault.read(tFile)
-				const srcLinesNum = extractSrcLinesNums(meta)
-
-				if (srcLinesNum.length == 0) {
-					src = fullSrc
-				} else {
-					src = extractSrcLines(fullSrc, srcLinesNum)
-				}
+			const metaYaml = parseYaml(meta)
+			const srcPath = metaYaml.PATH
+			if (!srcPath) {
+				await MarkdownRenderer.renderMarkdown("ERROR: invalid source path", el, '', this)
+				return
 			}
 
-			let title = extractTitle(meta)
-			if (title == "") {
+			const tFile = app.vault.getAbstractFileByPath(srcPath)
+
+			if (tFile instanceof TFile) {
+				fullSrc = await app.vault.read(tFile)
+			} else {
+				const errMsg = `\`ERROR: could't read file '${srcPath}'\``
+				await MarkdownRenderer.renderMarkdown(errMsg, el, '', this)
+				return
+			}
+
+
+			let srcLinesNum: number[] = []
+			const srcLinesNumString = metaYaml.LINES
+			if (srcLinesNumString) {
+				srcLinesNum = analyseSrcLines(srcLinesNumString)
+			}
+
+			if (srcLinesNum.length == 0) {
+				src = fullSrc
+			} else {
+				src = extractSrcLines(fullSrc, srcLinesNum)
+			}
+
+			let title = metaYaml.TITLE
+			if (!title) {
 				title = srcPath
 			}
 
@@ -81,7 +88,7 @@ export default class EmbedCodeFile extends Plugin {
 		if (!codeElm) {
 			return
 		}
-		
+
 		const pre = codeElm.parentElement as HTMLPreElement;
 
 		const codeSection = context.getSectionInfo(pre)
@@ -93,11 +100,16 @@ export default class EmbedCodeFile extends Plugin {
 		if (!view) {
 			return
 		}
-		
+
 		const num = codeSection.lineStart
 		const codeBlockFirstLine = view.editor.getLine(num)
 
-		const title = extractTitle(codeBlockFirstLine)
+		let matchTitle = codeBlockFirstLine.match(/TITLE:\s*"([^"]*)"/i)
+		if (matchTitle == null) {
+			return
+		}
+
+		const title = matchTitle[1]
 		if (title == "") {
 			return
 		}

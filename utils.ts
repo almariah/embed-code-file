@@ -1,9 +1,5 @@
 import path from "path";
 
-const srcRegExp = /PATH:"([^"]*)"/i
-const srcLinesRegExp = /LINES:"([^"]*)"/i
-const titleRegExp = /TITLE:"([^"]*)"/i
-
 export function pathJoin(dir: string, subpath: string): string {
   const result = path.join(dir, subpath);
   // it seems that obsidian do not understand paths with backslashes in Windows, so turn them into forward slashes
@@ -30,25 +26,6 @@ export function analyseSrcLines(str: string): number[] {
 	})
 
 	return result
-}
-
-export function extractSrcPath(line: string): string {
-	let matched = line.match(srcRegExp)
-	if (matched == null) {
-		return ""
-	}
-	return matched[1]
-}
-
-export function extractSrcLinesNums(codeBlockFirstLine: string): number[] {
-    let srcLinesNum: number[] = []
-    if (codeBlockFirstLine.match(srcLinesRegExp) != null) {
-        let srcLinesNumInfo = codeBlockFirstLine.match(srcLinesRegExp)
-        if (srcLinesNumInfo) {
-            srcLinesNum = analyseSrcLines(srcLinesNumInfo[1])
-        }
-    }
-    return srcLinesNum
 }
 
 export function extractSrcLines(fullSrc: string,  srcLinesNum: number[]): string {
@@ -97,12 +74,4 @@ export function extractSrcLines(fullSrc: string,  srcLinesNum: number[]): string
 	});
 
     return src
-}
-
-export function extractTitle(line: string): string {
-	let matched = line.match(titleRegExp)
-	if (matched == null) {
-		return ""
-	}
-	return matched[1]
 }
