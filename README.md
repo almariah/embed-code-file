@@ -50,10 +50,10 @@ Using live preview feature will enhance the embedding experience.
 ## Demo
 
 #### Embed code file
-![Gif](/demo/embed-code-file.gif)
+![Gif](https://github.com/almariah/embed-code-file/blob/main/demo/embed-code-file.gif?raw=true)
 
 #### Embed lines from code file
-![Gif](/demo/embed-code-file-lines.gif)
+![Gif](https://github.com/almariah/embed-code-file/blob/main/demo/embed-code-file-lines.gif?raw=true)
 
 #### Add title to normal code block
-![Gif](/demo/normal-code-block-title.gif)
+![Gif](https://github.com/almariah/embed-code-file/blob/main/demo/normal-code-block-title.gif?raw=true)
