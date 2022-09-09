@@ -35,7 +35,14 @@ export default class EmbedCodeFile extends Plugin {
 			let fullSrc = ""
 			let src = ""
 
-			const metaYaml = parseYaml(meta)
+			let metaYaml: any
+			try {
+				metaYaml = parseYaml(meta)
+			} catch(e) {
+				await MarkdownRenderer.renderMarkdown("`ERROR: invalid embedding (invalid YAML)`", el, '', this)
+				return
+			}
+
 			const srcPath = metaYaml.PATH
 			if (!srcPath) {
 				await MarkdownRenderer.renderMarkdown("ERROR: invalid source path", el, '', this)
