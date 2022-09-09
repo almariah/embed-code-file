@@ -1,4 +1,4 @@
-import { Plugin, MarkdownRenderer, TFile, MarkdownPostProcessorContext, MarkdownView, parseYaml} from 'obsidian';
+import { Plugin, MarkdownRenderer, TFile, MarkdownPostProcessorContext, MarkdownView, parseYaml, requestUrl} from 'obsidian';
 import { EmbedCodeFileSettings, EmbedCodeFileSettingTab, DEFAULT_SETTINGS} from "./settings";
 import { analyseSrcLines, extractSrcLines} from "./utils";
 
@@ -43,22 +43,37 @@ export default class EmbedCodeFile extends Plugin {
 				return
 			}
 
-			const srcPath = metaYaml.PATH
+			let srcPath = metaYaml.PATH
 			if (!srcPath) {
-				await MarkdownRenderer.renderMarkdown("ERROR: invalid source path", el, '', this)
+				await MarkdownRenderer.renderMarkdown("`ERROR: invalid source path`", el, '', this)
 				return
 			}
 
-			const tFile = app.vault.getAbstractFileByPath(srcPath)
+			if (srcPath.startsWith("https://") || srcPath.startsWith("http://")) {
+				try {
+					let httpResp = await requestUrl({url: srcPath, method: "GET"})
+					fullSrc = httpResp.text
+				} catch(e) {
+					const errMsg = `\`ERROR: could't fetch '${srcPath}'\``
+					await MarkdownRenderer.renderMarkdown(errMsg, el, '', this)
+					return
+				}
+			} else if (srcPath.startsWith("vault://")) {
+				srcPath = srcPath.replace(/^(vault:\/\/)/,'');
 
-			if (tFile instanceof TFile) {
-				fullSrc = await app.vault.read(tFile)
+				const tFile = app.vault.getAbstractFileByPath(srcPath)
+				if (tFile instanceof TFile) {
+					fullSrc = await app.vault.read(tFile)
+				} else {
+					const errMsg = `\`ERROR: could't read file '${srcPath}'\``
+					await MarkdownRenderer.renderMarkdown(errMsg, el, '', this)
+					return
+				}
 			} else {
-				const errMsg = `\`ERROR: could't read file '${srcPath}'\``
+				const errMsg = "`ERROR: invalid source path, use 'vault://...' or 'http[s]://...'`"
 				await MarkdownRenderer.renderMarkdown(errMsg, el, '', this)
 				return
 			}
-
 
 			let srcLinesNum: number[] = []
 			const srcLinesNumString = metaYaml.LINES
