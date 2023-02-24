@@ -6,12 +6,14 @@ export interface EmbedCodeFileSettings {
 	includedLanguages: string;
 	titleBackgroundColor: string;
 	titleFontColor: string;
+	authToken: string;
 }
 
 export const DEFAULT_SETTINGS: EmbedCodeFileSettings = {
 	includedLanguages: 'c,cs,cpp,java,python,go,ruby,javascript,js,typescript,ts,shell,sh,bash',
 	titleBackgroundColor: "#00000020",
-	titleFontColor: ""
+	titleFontColor: "",
+	authToken: ""
 }
 
 export class EmbedCodeFileSettingTab extends PluginSettingTab {
@@ -48,7 +50,7 @@ export class EmbedCodeFileSettingTab extends PluginSettingTab {
 					this.plugin.settings.titleFontColor = value;
 					await this.plugin.saveSettings();
 				}));
-		  
+
 		new Setting(containerEl)
 			.setName('Background color of title')
 			.addText(text => text
@@ -56,6 +58,15 @@ export class EmbedCodeFileSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.titleBackgroundColor)
 				.onChange(async (value) => {
 					this.plugin.settings.titleBackgroundColor = value;
+					await this.plugin.saveSettings();
+				}));
+		new Setting(containerEl)
+			.setName('API auth token to fetch code from private repos')
+			.addText(text => text
+				.setPlaceholder('Enter a token')
+				.setValue(this.plugin.settings.authToken)
+				.onChange(async (value) => {
+					this.plugin.settings.authToken = value;
 					await this.plugin.saveSettings();
 				}));
 	}

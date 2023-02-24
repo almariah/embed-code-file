@@ -51,7 +51,11 @@ export default class EmbedCodeFile extends Plugin {
 
 			if (srcPath.startsWith("https://") || srcPath.startsWith("http://")) {
 				try {
-					let httpResp = await requestUrl({url: srcPath, method: "GET"})
+					let requestParams = {url: srcPath, method: "GET"}
+					if (this.settings.authToken) {
+						requestParams["headers"] = {"Authorization": `token ${this.settings.authToken}`}
+					}
+					let httpResp = await requestUrl(requestParams)
 					fullSrc = httpResp.text
 				} catch(e) {
 					const errMsg = `\`ERROR: could't fetch '${srcPath}'\``
