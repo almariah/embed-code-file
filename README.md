@@ -47,7 +47,7 @@ where `PATH`, `LINES` and `TITLE` properties are set as YAML key-value pairs:
 * The `LINES` will include only the specified lines of the code file. Every set of included lines either range or explicit line will append dots (`...`) to included line in a newline. If you want to get rid of dots, minimize the number of sets by using one range as much as you can.
 
 
-* The `TAGS` will include only the lines between the tags, which may be comments. It does not include the tagges lines.  
+* The `TAGS` is an alternative method to specify one ore more code block of a file. It will include only the lines between the tags, which may be comments. It does not include the tagged lines.  
 
 ````yaml
 ```embed-js
