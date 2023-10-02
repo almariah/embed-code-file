@@ -46,6 +46,32 @@ where `PATH`, `LINES` and `TITLE` properties are set as YAML key-value pairs:
 
 * The `LINES` will include only the specified lines of the code file. Every set of included lines either range or explicit line will append dots (`...`) to included line in a newline. If you want to get rid of dots, minimize the number of sets by using one range as much as you can.
 
+
+* The `TAGS` will include only the lines between the tags, which may be comments. It does not include the tagges lines.  
+
+````yaml
+```embed-js
+PATH: "vault://H-ToHTML/js/test.js"
+TAGS: "// array02"
+TITLE: "Javascript Arrays"
+```
+````
+
+Example:
+```js
+// array02
+{
+    const array = []; // const: Veränderung des Array OK, neue Zuweisung nicht!
+    for (let i = 0; i < 10; ++i) {
+        array.push(i);  // Ans Ende anfügen
+    }
+    console.log(array); // [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+}
+// array02
+```
+
+
+
 * If `TITLE` is not set, then the title of the code block will be `PATH` value.
 
 You can use also `TITLE` with normal code block (without `embed-`), but make sure that the title value is set with double quotes:

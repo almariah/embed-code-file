@@ -1,6 +1,6 @@
-import { Plugin, MarkdownRenderer, TFile, MarkdownPostProcessorContext, MarkdownView, parseYaml, requestUrl} from 'obsidian';
-import { EmbedCodeFileSettings, EmbedCodeFileSettingTab, DEFAULT_SETTINGS} from "./settings";
-import { analyseSrcLines, extractSrcLines} from "./utils";
+import { Plugin, MarkdownRenderer, TFile, MarkdownPostProcessorContext, MarkdownView, parseYaml, requestUrl } from 'obsidian';
+import { EmbedCodeFileSettings, EmbedCodeFileSettingTab, DEFAULT_SETTINGS } from "./settings";
+import { analyseSrcLines, extractSrcLines } from "./utils";
 
 export default class EmbedCodeFile extends Plugin {
 	settings: EmbedCodeFileSettings;
@@ -38,7 +38,7 @@ export default class EmbedCodeFile extends Plugin {
 			let metaYaml: any
 			try {
 				metaYaml = parseYaml(meta)
-			} catch(e) {
+			} catch (e) {
 				await MarkdownRenderer.renderMarkdown("`ERROR: invalid embedding (invalid YAML)`", el, '', this)
 				return
 			}
@@ -51,15 +51,15 @@ export default class EmbedCodeFile extends Plugin {
 
 			if (srcPath.startsWith("https://") || srcPath.startsWith("http://")) {
 				try {
-					let httpResp = await requestUrl({url: srcPath, method: "GET"})
+					let httpResp = await requestUrl({ url: srcPath, method: "GET" })
 					fullSrc = httpResp.text
-				} catch(e) {
+				} catch (e) {
 					const errMsg = `\`ERROR: could't fetch '${srcPath}'\``
 					await MarkdownRenderer.renderMarkdown(errMsg, el, '', this)
 					return
 				}
 			} else if (srcPath.startsWith("vault://")) {
-				srcPath = srcPath.replace(/^(vault:\/\/)/,'');
+				srcPath = srcPath.replace(/^(vault:\/\/)/, '');
 
 				const tFile = app.vault.getAbstractFileByPath(srcPath)
 				if (tFile instanceof TFile) {
@@ -86,6 +86,17 @@ export default class EmbedCodeFile extends Plugin {
 			} else {
 				src = extractSrcLines(fullSrc, srcLinesNum)
 			}
+
+			// ADR
+			const tags = metaYaml.TAGS
+			if (tags) {
+				const rx = new RegExp(`${tags}(.*?)${tags}`, "s");
+				const m = rx.exec(src);
+				if (m !== null) {
+					src = m[1];
+				}
+			}
+
 
 			let title = metaYaml.TITLE
 			if (!title) {
@@ -142,8 +153,8 @@ export default class EmbedCodeFile extends Plugin {
 
 	insertTitlePreElement(pre: HTMLPreElement, title: string) {
 		pre
-		.querySelectorAll(".obsidian-embed-code-file")
-		.forEach((x) => x.remove());
+			.querySelectorAll(".obsidian-embed-code-file")
+			.forEach((x) => x.remove());
 
 		let titleElement = document.createElement("pre");
 		titleElement.appendText(title);
