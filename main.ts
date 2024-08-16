@@ -1,6 +1,7 @@
 import { Plugin, MarkdownRenderer, TFile, MarkdownPostProcessorContext, MarkdownView, parseYaml, requestUrl} from 'obsidian';
 import { EmbedCodeFileSettings, EmbedCodeFileSettingTab, DEFAULT_SETTINGS} from "./settings";
 import { analyseSrcLines, extractSrcLines} from "./utils";
+import { createCodeParser, CodeParser } from "./code-parser";
 
 export default class EmbedCodeFile extends Plugin {
 	settings: EmbedCodeFileSettings;
@@ -34,6 +35,7 @@ export default class EmbedCodeFile extends Plugin {
 		this.registerMarkdownCodeBlockProcessor(`embed-${lang}`, async (meta, el, ctx) => {
 			let fullSrc = ""
 			let src = ""
+			let codeParser: CodeParser = createCodeParser(lang, this.settings)
 
 			let metaYaml: any
 			try {
@@ -81,10 +83,18 @@ export default class EmbedCodeFile extends Plugin {
 				srcLinesNum = analyseSrcLines(srcLinesNumString)
 			}
 
+
+			let parsedSrc: any = codeParser.parseCode(fullSrc)
+			if (parsedSrc instanceof Error) {
+				const errMsg = `\`ERROR: ${parsedSrc.message}\``
+				await MarkdownRenderer.renderMarkdown(errMsg, el, '', this)
+				return
+			}
+
 			if (srcLinesNum.length == 0) {
-				src = fullSrc
+				src = parsedSrc
 			} else {
-				src = extractSrcLines(fullSrc, srcLinesNum)
+				src = extractSrcLines(parsedSrc, srcLinesNum)
 			}
 
 			let title = metaYaml.TITLE
@@ -92,7 +102,8 @@ export default class EmbedCodeFile extends Plugin {
 				title = srcPath
 			}
 
-			await MarkdownRenderer.renderMarkdown('```' + lang + '\n' + src + '\n```', el, '', this)
+			let srcBlock = '```' + codeParser.getOutputLanguage() + '\n' + src + '\n```'
+			await MarkdownRenderer.renderMarkdown(srcBlock, el, '', this)
 			this.addTitleLivePreview(el, title);
 		});
 	}

@@ -6,12 +6,16 @@ export interface EmbedCodeFileSettings {
 	includedLanguages: string;
 	titleBackgroundColor: string;
 	titleFontColor: string;
+	displayIpynbAsPython: boolean;
+	showIpynbCellNumbers: boolean;
 }
 
 export const DEFAULT_SETTINGS: EmbedCodeFileSettings = {
-	includedLanguages: 'c,cs,cpp,java,python,go,ruby,javascript,js,typescript,ts,shell,sh,bash',
+	includedLanguages: 'c,cs,cpp,java,python,go,ruby,javascript,js,typescript,ts,shell,sh,bash,ipynb',
 	titleBackgroundColor: "#00000020",
-	titleFontColor: ""
+	titleFontColor: "",
+	displayIpynbAsPython: true,
+	showIpynbCellNumbers: true,
 }
 
 export class EmbedCodeFileSettingTab extends PluginSettingTab {
@@ -48,7 +52,7 @@ export class EmbedCodeFileSettingTab extends PluginSettingTab {
 					this.plugin.settings.titleFontColor = value;
 					await this.plugin.saveSettings();
 				}));
-		  
+
 		new Setting(containerEl)
 			.setName('Background color of title')
 			.addText(text => text
@@ -58,5 +62,26 @@ export class EmbedCodeFileSettingTab extends PluginSettingTab {
 					this.plugin.settings.titleBackgroundColor = value;
 					await this.plugin.saveSettings();
 				}));
+
+		new Setting(containerEl)
+			.setName('Display Jupyter Notebooks as python')
+			.setDesc('Parse .ipynb files to extract and display their python source code.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.displayIpynbAsPython)
+				.onChange(async (value) => {
+					this.plugin.settings.displayIpynbAsPython = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Jupyter Notebook Cell Numbers')
+			.setDesc('Show Jupyter Notebook cell numbers in the embedded python code.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showIpynbCellNumbers)
+				.onChange(async (value) => {
+					this.plugin.settings.showIpynbCellNumbers = value;
+					await this.plugin.saveSettings();
+				}));
+
 	}
 }
