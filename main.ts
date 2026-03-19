@@ -70,9 +70,19 @@ export default class EmbedCodeFile extends Plugin {
 					return
 				}
 			} else {
-				const errMsg = "`ERROR: invalid source path, use 'vault://...' or 'http[s]://...'`"
-				await MarkdownRenderer.renderMarkdown(errMsg, el, '', this)
-				return
+				// Relative path: resolve against the current note's folder
+				const noteFolder = ctx.sourcePath.includes("/")
+					? ctx.sourcePath.substring(0, ctx.sourcePath.lastIndexOf("/"))
+					: "";
+				const resolvedPath = noteFolder ? `${noteFolder}/${srcPath}` : srcPath;
+				const tFile = app.vault.getAbstractFileByPath(resolvedPath);
+				if (tFile instanceof TFile) {
+					fullSrc = await app.vault.read(tFile);
+				} else {
+					const errMsg = `\`ERROR: couldn't read file '${resolvedPath}' (resolved from relative path '${srcPath}')\``;
+					await MarkdownRenderer.renderMarkdown(errMsg, el, "", this);
+					return;
+				}
 			}
 
 			let srcLinesNum: number[] = []
